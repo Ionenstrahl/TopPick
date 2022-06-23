@@ -1,17 +1,19 @@
+import time
+
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
-# import pydash
-
 
 SEVENTEEN_LANDS_PATH = "https://www.17lands.com/card_ratings"
-SCRYFALL_PATH = "https://scryfall.com/card/neo/"  # https://scryfall.com/card/neo/1/ancestral-katana
+SCRYFALL_PATH = "https://scryfall.com/card/neo/"                # e.g. https://scryfall.com/card/neo/1/ancestral-katana
+
+
+def is_common(attributes):
+    rarity = attributes[2].text
+    return rarity == "C"
 
 
 class WebScraper:
@@ -25,48 +27,50 @@ class WebScraper:
             self.img_url = ""
 
     def __init__(self):
-        chrome_options = Options()
-        chrome_options.add_argument("--disable-gpu")  # recommended for headless chrome on win
-        chrome_options.add_argument("--headless")
-
-        # self.driver = webdriver.Chrome(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
-
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
         self.edition = ""
         self.commons = []
 
     def create_commons(self):
         self.driver.get(SEVENTEEN_LANDS_PATH)
 
-        # Edition
+        self.edition = self.scrap_edition()
+        time.sleep(3)
+        self.commons = self.scrap_commons()
+
+    def scrap_edition(self):
         edition_xpath = "//select[@name='expansion']/option"
         edition_condition = EC.presence_of_element_located((By.XPATH, edition_xpath))
         edition_element = WebDriverWait(self.driver, 10).until(edition_condition)
-        self.edition = edition_element.get_attribute("value")
-        print(self.edition)
+        return edition_element.get_attribute("value")
 
-        # wait for card data to load
+    def scrap_commons(self):
+        cards = self.scrap_all_cards()
+        return self.filter_commons(cards)
+
+    def scrap_all_cards(self):
         card_xpath = "//tr[td/div/@class='list_card']"
-        card_condition = EC.presence_of_element_located((By.XPATH, card_xpath))
-        card = WebDriverWait(self.driver, 10).until(card_condition)
+        return self.driver.find_elements(By.XPATH, card_xpath)
 
-        # relevant common Data
-        cards = self.driver.find_elements(By.XPATH, card_xpath)
+    def filter_commons(self, cards):
         num = 0
         total = len(cards)
+        commons = []
         for card in cards:
             num += 1
             print(f"{num}/{total}")
             attributes = card.find_elements(By.TAG_NAME, "td")
-            rarity = attributes[2].text
-            if rarity == "C":
-                common = self.Common()
-                common.num = num
-                common.name = attributes[0].text
-                common.color = attributes[1].text
-                common.winrate = int(attributes[14].text[:2])
-                self.commons.append(common)
-                print(f"added {common.num}, len(commons)={len(self.commons)}")
+            if is_common(attributes):
+                commons.append(self.create_common(attributes, num))
+        return commons
+
+    def create_common(self, attributes, num):
+        common = self.Common()
+        common.num = num
+        common.name = attributes[0].text
+        common.color = attributes[1].text
+        common.winrate = int(attributes[14].text[:2])
+        return common
 
     def add_img_url(self, common):
         print(f"self.edition {self.edition}")

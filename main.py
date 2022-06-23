@@ -1,9 +1,11 @@
+import random
+
 from flask import Flask, render_template
 from web_scraper import WebScraper
 from data_processing import DataProcessing
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Table, Column, Integer, ForeignKey
-from sqlalchemy.orm import relationship
+import os
+
 
 # APP
 app = Flask(__name__)
@@ -71,5 +73,11 @@ if __name__ == "__main__":
 # add logic that db refreshes after load
 # style
 # headless browser
+    # chrome_options = Options()
+    # chrome_options.add_argument("--disable-gpu")  # recommended for headless chrome on win
+    # chrome_options.add_argument("--headless")
+    # self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 # responsive
 # Dummy Image if not found
+
+random_number = random.randint()
