@@ -3,13 +3,13 @@ import random
 from flask import Flask, render_template
 from web_scraper import WebScraper
 from data_processing import DataProcessing
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, inspect
 import os
 
 
 # APP
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///blog.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///common.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -22,6 +22,12 @@ class Common(db.Model):
     color = db.Column(db.String(10))
     winrate = db.Column(db.Float)
     img_url = db.Column(db.String(1000))
+
+
+db.drop_all()
+if not inspect(db.engine).has_table("common"):
+    print("create table")
+    db.create_all()
 
 
 # WEB SCRAPING
