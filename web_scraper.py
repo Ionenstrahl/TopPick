@@ -27,11 +27,12 @@ class WebScraper:
             self.img_url = ""
 
     def __init__(self):
-        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        
         self.edition = ""
         self.commons = []
 
     def create_commons(self):
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
         self.driver.get(SEVENTEEN_LANDS_PATH)
 
         self.edition = self.scrap_edition()

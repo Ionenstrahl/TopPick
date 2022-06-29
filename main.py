@@ -5,6 +5,8 @@ from web_scraper import WebScraper
 from data_processing import DataProcessing
 from flask_sqlalchemy import SQLAlchemy, inspect
 import os
+import datetime as dt
+from sqlalchemy_utils.functions import database_exists
 
 
 # APP
@@ -22,12 +24,32 @@ class Common(db.Model):
     color = db.Column(db.String(10))
     winrate = db.Column(db.Float)
     img_url = db.Column(db.String(1000))
+    timestamp = db.Column(db.DateTime)
 
 
-db.drop_all()
-if not inspect(db.engine).has_table("common"):
-    print("create table")
-    db.create_all()
+
+
+def Get_Common_In_DB():
+    """Build database, or see if the content has a different build date
+    """    
+    if not database_exists("sqlite:///common.db"):
+        db.create_all()
+        create_commons()
+    else:
+        last_update_date = Common.query.get(1).timestamp.strftime('%Y-%m-%d')
+        current_date = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%d')
+        if current_date != last_update_date:
+            db.drop_all()
+            db.create_all()
+            print("a")
+            create_commons()
+
+
+# Todo: at the moment creates always a new db
+# db.drop_all()
+# if not inspect(db.engine).has_table("Common"):
+#     print("create table")
+#     db.create_all()
 
 
 # WEB SCRAPING
@@ -42,7 +64,8 @@ def create_commons():
             name=common.name,
             color=common.color,
             winrate=common.winrate,
-            img_url=common.img_url
+            img_url=common.img_url,
+            timestamp=dt.datetime.now(dt.timezone.utc)
         )
         db.session.add(new_common)
         db.session.commit()
@@ -60,8 +83,10 @@ def add_urls(top_commons):
             scraper.add_img_url(common)
 
 
-create_commons()
-top_commons = sort_data(3)
+Get_Common_In_DB()
+print("sdf")
+# create_commons()
+top_commons = sort_data(3)  # Todo: gives currently an empty list
 print(top_commons)
 add_urls(top_commons)
 
@@ -75,8 +100,7 @@ if __name__ == "__main__":
     app.run(debug=False)
 
 # TODO
-# add db
-# add logic that db refreshes after load
+db: create img_url
 # style
 # headless browser
     # chrome_options = Options()
