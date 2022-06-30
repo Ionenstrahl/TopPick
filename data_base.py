@@ -45,16 +45,16 @@ class DataBase:
 
 
 
-class BlogPost(db.Model):
-    __tablename__ = "blog_posts"
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(250), unique=True, nullable=False)
-    subtitle = db.Column(db.String(250), nullable=False)
-    date = db.Column(db.String(250), nullable=False)
-    body = db.Column(db.Text, nullable=False)
-    img_url = db.Column(db.String(250), nullable=False)
-    # Create Foreign Key, "users.id" the users refers to the tablename of User.
-    author_id = Column(Integer, ForeignKey('users.id'))
-    # Create reference to the User object, the "posts" refers to the posts protperty in the User class.
-    author = relationship("User", back_populates="blog_posts")
-    comments = relationship("Comment", back_populates="blog_post")
+# class BlogPost(db.Model):
+#     __tablename__ = "blog_posts"
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(250), unique=True, nullable=False)
+#     subtitle = db.Column(db.String(250), nullable=False)
+#     date = db.Column(db.String(250), nullable=False)
+#     body = db.Column(db.Text, nullable=False)
+#     img_url = db.Column(db.String(250), nullable=False)
+#     # Create Foreign Key, "users.id" the users refers to the tablename of User.
+#     author_id = Column(Integer, ForeignKey('users.id'))
+#     # Create reference to the User object, the "posts" refers to the posts protperty in the User class.
+#     author = relationship("User", back_populates="blog_posts")
+#     comments = relationship("Comment", back_populates="blog_post")
