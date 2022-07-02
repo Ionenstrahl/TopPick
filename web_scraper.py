@@ -25,6 +25,7 @@ class WebScraper:
             self.color = ""
             self.winrate = 0
             self.img_url = ""
+            self.edition = ""
 
     def __init__(self):
         
@@ -32,26 +33,26 @@ class WebScraper:
         self.commons = []
 
     def create_commons(self):
-        self.driver = webdriver.Chrome(ChromeDriverManager().install())
-        self.driver.get(SEVENTEEN_LANDS_PATH)
+        driver = webdriver.Chrome(ChromeDriverManager().install())
+        driver.get(SEVENTEEN_LANDS_PATH)
 
-        self.edition = self.scrap_edition()
+        self.edition = self.scrap_edition(driver)
         time.sleep(3)
-        self.commons = self.scrap_commons()
+        self.commons = self.scrap_commons(driver)
 
-    def scrap_edition(self):
+    def scrap_edition(self, driver):
         edition_xpath = "//select[@name='expansion']/option"
         edition_condition = EC.presence_of_element_located((By.XPATH, edition_xpath))
-        edition_element = WebDriverWait(self.driver, 10).until(edition_condition)
-        return edition_element.get_attribute("value")
+        edition_element = WebDriverWait(driver, 10).until(edition_condition)
+        return edition_element.get_attribute("value").lower()
 
-    def scrap_commons(self):
-        cards = self.scrap_all_cards()
+    def scrap_commons(self, driver):
+        cards = self.scrap_all_cards(driver)
         return self.filter_commons(cards)
 
-    def scrap_all_cards(self):
+    def scrap_all_cards(self, driver):
         card_xpath = "//tr[td/div/@class='list_card']"
-        return self.driver.find_elements(By.XPATH, card_xpath)
+        return driver.find_elements(By.XPATH, card_xpath)
 
     def filter_commons(self, cards):
         num = 0
@@ -70,14 +71,19 @@ class WebScraper:
         common.num = num
         common.name = attributes[0].text
         common.color = attributes[1].text
-        common.winrate = int(attributes[14].text[:2])
+        common.winrate = float(attributes[14].text[:4])
+        common.edition = self.edition
+        common.img_url = self.retrieve_img_url(common)
         return common
 
-    def add_img_url(self, common):
+    def retrieve_img_url(self, common):
         print(f"self.edition {self.edition}")
         print(f"common.num {common.num}")
-        self.driver.get(f"https://scryfall.com/card/{self.edition}/{common.num}")
+
+        driver = webdriver.Chrome(ChromeDriverManager().install())
+        driver.get(f"https://scryfall.com/card/{self.edition}/{common.num}")
+
         img_xpath = "//div[@class='card-profile']//img"
         img_condition = EC.presence_of_element_located((By.XPATH, img_xpath))
-        img_element = WebDriverWait(self.driver, 10).until(img_condition)
-        common.img_url = img_element.get_attribute("src")
+        img_element = WebDriverWait(driver, 10).until(img_condition)
+        return img_element.get_attribute("src")

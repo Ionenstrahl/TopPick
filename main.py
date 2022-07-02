@@ -1,12 +1,10 @@
-import random
+import datetime as dt
+import os
 
 from flask import Flask, render_template
-from web_scraper import WebScraper
-from data_processing import DataProcessing
-from flask_sqlalchemy import SQLAlchemy, inspect
-import os
-import datetime as dt
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils.functions import database_exists
+from web_scraper import WebScraper
 
 
 # APP
@@ -25,31 +23,52 @@ class Common(db.Model):
     winrate = db.Column(db.Float)
     img_url = db.Column(db.String(1000))
     timestamp = db.Column(db.DateTime)
+    edition = db.Column(db.String(100))
 
 
-
-
-def Get_Common_In_DB():
-    """Build database, or see if the content has a different build date
-    """    
-    if not database_exists("sqlite:///common.db"):
+def create_and_update_commons():
+    if not database_exists("sqlite:///common.db") or Common.query.first() is None:
         db.create_all()
         create_commons()
-    else:
-        last_update_date = Common.query.get(1).timestamp.strftime('%Y-%m-%d')
-        current_date = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%d')
-        if current_date != last_update_date:
-            db.drop_all()
-            db.create_all()
-            print("a")
-            create_commons()
+    if needs_updated():
+        db.drop_all()
+        db.create_all()
+        create_commons()
 
 
-# Todo: at the moment creates always a new db
-# db.drop_all()
-# if not inspect(db.engine).has_table("Common"):
-#     print("create table")
-#     db.create_all()
+def needs_updated():
+    last_update_date = Common.query.get(1).timestamp.strftime('%Y-%m-%d')
+    current_date = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%d')
+    return current_date != last_update_date
+
+
+def get_top_commons_white():
+    return Common.query.filter_by(color="W").order_by(Common.winrate.desc()).limit(5).all()
+
+
+def get_top_commons_blue():
+    return Common.query.filter_by(color="U").order_by(Common.winrate.desc()).limit(5).all()
+
+
+def get_top_commons_black():
+    return Common.query.filter_by(color="B").order_by(Common.winrate.desc()).limit(5).all()
+
+
+def get_top_commons_red():
+    c = Common.query.filter_by(color="R").order_by(Common.winrate.desc()).limit(5).all()
+    print(c[0].img_url)
+
+
+def get_top_commons_green():
+    return Common.query.filter_by(color="G").order_by(Common.winrate.desc()).limit(5).all()
+
+
+def get_top_commons_colorless():
+    return Common.query.filter_by(color="").order_by(Common.winrate.desc()).limit(5).all()
+
+
+def get_top_commons_multicolor():
+    return Common.query.filter(len(Common.color) > 1).order_by(Common.winrate.desc()).limit(5).all()
 
 
 # WEB SCRAPING
@@ -65,32 +84,26 @@ def create_commons():
             color=common.color,
             winrate=common.winrate,
             img_url=common.img_url,
-            timestamp=dt.datetime.now(dt.timezone.utc)
+            timestamp=dt.datetime.now(dt.timezone.utc),
+            edition=common.edition
         )
         db.session.add(new_common)
         db.session.commit()
 
 
-def sort_data(amount):
-    sorted_commons = DataProcessing.sort_commons(scraper.commons)
-    top_commons = DataProcessing.retrieve_top_commons(sorted_commons, amount)
-    return top_commons
-
-
 def add_urls(top_commons):
     for mono_color_commons in top_commons:
         for common in mono_color_commons:
-            scraper.add_img_url(common)
+            scraper.retrieve_img_url(common)
 
 
-Get_Common_In_DB()
-print("sdf")
-# create_commons()
-top_commons = sort_data(3)  # Todo: gives currently an empty list
-print(top_commons)
-add_urls(top_commons)
+# MAIN
+create_and_update_commons()
+print(get_top_commons_red())
+# add_urls(top_commons)
 
 
+# SERVER
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -100,7 +113,7 @@ if __name__ == "__main__":
     app.run(debug=False)
 
 # TODO
-db: create img_url
+# db: create img_url
 # style
 # headless browser
     # chrome_options = Options()
@@ -109,5 +122,3 @@ db: create img_url
     # self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 # responsive
 # Dummy Image if not found
-
-random_number = random.randint()
