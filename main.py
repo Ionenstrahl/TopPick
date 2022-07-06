@@ -42,6 +42,15 @@ def needs_updated():
     return current_date != last_update_date
 
 
+def get_top_commons():
+    return get_top_commons_white(), \
+           get_top_commons_blue(), \
+           get_top_commons_black(), \
+           get_top_commons_red(), \
+           get_top_commons_green(), \
+           get_top_commons_colorless()
+
+
 def get_top_commons_white():
     return Common.query.filter_by(color="W").order_by(Common.winrate.desc()).limit(5).all()
 
@@ -55,8 +64,7 @@ def get_top_commons_black():
 
 
 def get_top_commons_red():
-    c = Common.query.filter_by(color="R").order_by(Common.winrate.desc()).limit(5).all()
-    print(c[0].img_url)
+    return Common.query.filter_by(color="R").order_by(Common.winrate.desc()).limit(5).all()
 
 
 def get_top_commons_green():
@@ -68,7 +76,7 @@ def get_top_commons_colorless():
 
 
 def get_top_commons_multicolor():
-    return Common.query.filter(len(Common.color) > 1).order_by(Common.winrate.desc()).limit(5).all()
+    return Common.query.filter(lambda c: len(c.color) > 1).order_by(Common.winrate.desc()).limit(5).all()
 
 
 # WEB SCRAPING
@@ -98,15 +106,13 @@ def add_urls(top_commons):
 
 
 # MAIN
-create_and_update_commons()
-print(get_top_commons_red())
-# add_urls(top_commons)
+# create_and_update_commons()
 
 
 # SERVER
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", post=get_top_commons())
 
 
 if __name__ == "__main__":

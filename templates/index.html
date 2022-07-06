@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>PickOnePackOne</title>
+    <link href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet">
 </head>
 <body>
     <div class='page'>
@@ -11,14 +12,22 @@
             <h2>New Capenna</h2>
             <h3>Premier Draft</h3>
         </div>
-        <div class='green section'>
+
+        {% for color in post: %}
+            <hr>
+            <div class='section'>
+                {% for common in color: %}
+                    <div class="card">
+                        <img src={{common.img_url}}/>
+                        <p>{{common.winrate}}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class='section section'>
             <img class='card' src=''/>
-            <img class='card' src=''/>
-            <img class='card' src=''/>
-      </div>
-      <div class='section section'>
-            <img class='card' src=''/>
-      </div>
+        </div>
     </div>
 </body>
 </html>
