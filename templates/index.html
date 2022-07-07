@@ -6,11 +6,20 @@
     <link href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet">
 </head>
 <body>
-    <div class='page'>
-        <div class='section header'>
+    <div>
+        <div class='header'>
             <h1>PickOnePackOne</h1>
-            <h2>New Capenna</h2>
-            <h3>Premier Draft</h3>
+            <div class ="subheading">
+                <div = "info">
+                    <h3>New Capenna</h3>
+                </div>
+                <div>
+                    <h3>Premier Draft</h3>
+                </div>
+                <div>
+                    <h3>Last Update</h3>
+                </div>
+            </div>
         </div>
 
         {% for color in post: %}
@@ -19,7 +28,7 @@
                 {% for common in color: %}
                     <div class="card">
                         <img src={{common.img_url}}/>
-                        <p>{{common.winrate}}</p>
+                        <p>{{common.winrate|int}}</p>
                     </div>
                 {% endfor %}
             </div>
