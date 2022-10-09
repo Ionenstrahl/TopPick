@@ -24,6 +24,9 @@ hr {
     background-color: grey
 }
 
+.page {
+}
+
 .header {
     display: flex;
     flex-direction: column;
