@@ -72,9 +72,12 @@ class WebScraper:
         common.num = num
         common.name = attributes[0].text
         common.color = attributes[1].text
-        common.winrate = float(attributes[14].text[:4])
+
+        scraped_winrate = attributes[14].text[:4]
+        common.winrate = float(scraped_winrate) if len(scraped_winrate) > 0 else 0.0
         common.edition = self.edition
-        img_urls = ScryFall.request_img_urls()
-        common.img_url = img_urls.img
-        common.cropped_img_url = img_urls.cropped_img
+
+        img_urls = ScryFall.request_img_urls(common.name)
+        common.img_url = img_urls["img"]
+        common.cropped_img_url = img_urls["cropped_img"]
         return common

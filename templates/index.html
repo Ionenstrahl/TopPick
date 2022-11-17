@@ -11,23 +11,23 @@
             <h1>PickOnePackOne</h1>
             <div class ="subheading">
                 <div class = "info">
-                    <h3>New Capenna</h3>
-                </div>
-                <div>
-                    <h3>Premier Draft</h3>
-                </div>
-                <div>
-                    <h3>Last Update</h3>
+                    <h3>Brothers of War</h3>
                 </div>
             </div>
         </div>
 
-        {% for color in post: %}
-            <hr>
+        {% for color_matching_commons in post: %}
             <div class='section'>
-                {% for common in color: %}
+                {% if color_matching_commons[0].color == "" %}
+                    <img width = "30" src="{{url_for('static', filename='C.svg')}}">
+                {% elif color_matching_commons[0].color|length > 1 %}
+                    <img width = "30" src="{{url_for('static', filename='M.svg')}}">
+                {% else %}
+                    <img width = "30" src="{{url_for('static', filename=color_matching_commons[0].color + '.svg')}}">
+                {% endif %}
+                {% for common in color_matching_commons: %}
                     <div class="card">
-                        <img src={{common.img_url}}/>
+                        <img src={{common.cropped_img_url}}/>
                         <p>{{common.winrate|int}}</p>
                     </div>
                 {% endfor %}
