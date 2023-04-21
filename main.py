@@ -117,7 +117,6 @@ def __create_commons():
         db.session.commit()
 
 
-# MAIN
 create_and_update_commons()
 
 
