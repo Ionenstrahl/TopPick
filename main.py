@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils.functions import database_exists
 from sqlalchemy.sql.expression import func
 
-from web_scraper import WebScraper
+from src.web_scraper import WebScraper
 
 # APP
 app = Flask(__name__)
@@ -30,7 +30,7 @@ class Common(db.Model):
 
 def create_and_update_commons():
     if not database_exists("sqlite:///common.db") or Common.query.first() is None:
-        print(database_exists("sqlite:///common.db"))
+        print("create db")
         db.create_all()
         __create_commons()
     if __needs_updated():
@@ -41,7 +41,13 @@ def create_and_update_commons():
 
 
 def __needs_updated():
-    last_update_date = Common.query.get(1).timestamp.strftime('%Y-%m-%d')
+
+    return True
+    first_entry = Common.query.get(1)
+    if first_entry is None:
+        return True
+
+    last_update_date = first_entry.timestamp.strftime('%Y-%m-%d')
     current_date = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%d')
     return current_date != last_update_date
 
@@ -130,7 +136,6 @@ if __name__ == "__main__":
     app.run(debug=False)
 
 # TODO
-# db: create img_url
 # style
 # headless browser
 # chrome_options = Options()
