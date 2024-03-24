@@ -17,6 +17,17 @@ def is_common(attributes):
     return rarity == "C"
 
 
+def set_chrome_options():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_prefs = {}
+    chrome_options.experimental_options["prefs"] = chrome_prefs
+    chrome_prefs["profile.default_content_settings"] = {"images": 2}
+    return chrome_options
+
+
 class WebScraper:
     class Common:
         def __init__(self):
@@ -33,9 +44,7 @@ class WebScraper:
         self.commons = []
 
     def create_commons(self):
-        options = Options()
-        options.add_argument('--headless')
-        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
+        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=set_chrome_options())
         driver.get(SEVENTEEN_LANDS_PATH)
 
         self.edition = self.__scrap_edition(driver)
