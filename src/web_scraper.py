@@ -1,6 +1,7 @@
 import time
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -32,7 +33,9 @@ class WebScraper:
         self.commons = []
 
     def create_commons(self):
-        driver = webdriver.Chrome(ChromeDriverManager().install())
+        options = Options()
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
         driver.get(SEVENTEEN_LANDS_PATH)
 
         self.edition = self.__scrap_edition(driver)
